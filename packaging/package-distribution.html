@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Package Distribution</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/ios.css">
+    <style>
+        .ios .page {
+            background-color: #F2F2F7;
+        }
+        
+        .search-bar {
+            padding: 10px 16px;
+            background-color: #F2F2F7;
+        }
+        
+        .search-input-wrapper {
+            position: relative;
+            background-color: rgba(142, 142, 147, 0.12);
+            border-radius: 10px;
+            padding: 9px 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-icon {
+            margin-right: 8px;
+        }
+        
+        .search-input {
+            border: none;
+            background: transparent;
+            font-size: 17px;
+            width: 100%;
+            outline: none;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            color: #000;
+        }
+        
+        .section-group {
+            margin-bottom: 20px;
+        }
+        
+        .section-header {
+            padding: 8px 16px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #3c3c43;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            opacity: 0.6;
+        }
+        
+        .package-list {
+            background-color: #fff;
+        }
+        
+        .package-item {
+            padding: 14px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(60, 60, 67, 0.1);
+        }
+        
+        .package-item:last-child {
+            border-bottom: none;
+        }
+        
+        .package-info {
+            flex: 1;
+        }
+        
+        .package-id {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #000;
+        }
+        
+        .package-details {
+            display: flex;
+            color: #8e8e93;
+            font-size: 15px;
+        }
+        
+        .package-details .weight {
+            margin-right: 12px;
+        }
+        
+        .distribute-button {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #007aff;
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+        
+        .floating-button {
+            position: fixed;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            padding: 0 16px;
+            z-index: 10;
+        }
+        
+        .primary-button {
+            width: 100%;
+            background-color: #007aff;
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            padding: 16px;
+            border-radius: 14px;
+            border: none;
+            text-align: center;
+            -webkit-appearance: none;
+            box-shadow: 0 2px 10px rgba(0, 122, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="ios">
+    <div class="page">
+        <header class="nav-bar">
+            <button class="back-button">
+                <svg width="12" height="21" viewBox="0 0 12 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 2L2 10.5L10 19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <h1 class="nav-title" data-i18n="packaging.distribution">Package Distribution</h1>
+        </header>
+
+        <div class="content-area">
+            <div class="search-bar">
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M13.2125 12.3516L9.15469 8.29375C9.78438 7.47969 10.125 6.48438 10.125 5.4375C10.125 4.18438 9.63594 3.00937 8.75156 2.12344C7.86719 1.2375 6.68906 0.75 5.4375 0.75C4.18594 0.75 3.00781 1.23906 2.12344 2.12344C1.2375 3.00781 0.75 4.18438 0.75 5.4375C0.75 6.68906 1.23906 7.86719 2.12344 8.75156C3.00781 9.6375 4.18438 10.125 5.4375 10.125C6.48438 10.125 7.47813 9.78438 8.29219 9.15625L12.35 13.2125C12.3619 13.2244 12.376 13.2338 12.3916 13.2403C12.4071 13.2467 12.4238 13.2501 12.4406 13.2501C12.4575 13.2501 12.4742 13.2467 12.4897 13.2403C12.5052 13.2338 12.5194 13.2244 12.5313 13.2125L13.2125 12.5328C13.2244 12.5209 13.2338 12.5068 13.2403 12.4912C13.2467 12.4757 13.2501 12.459 13.2501 12.4422C13.2501 12.4254 13.2467 12.4087 13.2403 12.3931C13.2338 12.3776 13.2244 12.3635 13.2125 12.3516ZM7.9125 7.9125C7.25 8.57344 6.37187 8.9375 5.4375 8.9375C4.50313 8.9375 3.625 8.57344 2.9625 7.9125C2.30156 7.25 1.9375 6.37187 1.9375 5.4375C1.9375 4.50313 2.30156 3.62344 2.9625 2.9625C3.625 2.30156 4.50313 1.9375 5.4375 1.9375C6.37187 1.9375 7.25156 2.3 7.9125 2.9625C8.57344 3.625 8.9375 4.50313 8.9375 5.4375C8.9375 6.37187 8.57344 7.25156 7.9125 7.9125Z" fill="#8E8E93"/>
+                    </svg>
+                    <input type="search" class="search-input" data-i18n-placeholder="packaging.searchPackage" placeholder="Search Package">
+                </div>
+            </div>
+
+            <div class="section-group">
+                <div class="section-header" data-i18n="packaging.pendingDistribution">Pending Distribution</div>
+                <div class="package-list">
+                    <!-- Package items will be dynamically added here -->
+                </div>
+            </div>
+
+            <div class="section-group">
+                <div class="section-header" data-i18n="packaging.distributedToday">Distributed Today</div>
+                <div class="package-list distributed">
+                    <!-- Distributed package items will be dynamically added here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="floating-button">
+            <button class="primary-button" data-i18n="packaging.startDistribution">Start Distribution</button>
+        </div>
+    </div>
+
+    <script src="../js/i18n.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize i18n
+            if (typeof updatePageLanguage === 'function') {
+                updatePageLanguage();
+            } else if (window.i18n && typeof window.i18n.updatePageLanguage === 'function') {
+                window.i18n.updatePageLanguage();
+            }
+
+            // Back button handler
+            document.querySelector('.back-button').addEventListener('click', function() {
+                window.history.back();
+            });
+
+            // Example package data - replace with actual data from your backend
+            const pendingPackages = [
+                { id: 'PKG001', weight: '2.5kg', destination: 'Shanghai', status: 'pending' },
+                { id: 'PKG002', weight: '1.8kg', destination: 'Beijing', status: 'pending' },
+                { id: 'PKG003', weight: '3.2kg', destination: 'Guangzhou', status: 'pending' }
+            ];
+
+            const distributedPackages = [
+                { id: 'PKG004', weight: '2.1kg', destination: 'Shenzhen', status: 'distributed' },
+                { id: 'PKG005', weight: '4.0kg', destination: 'Chengdu', status: 'distributed' }
+            ];
+
+            // Render package lists
+            function renderPackageList(packages, container) {
+                const list = document.querySelector(container);
+                list.innerHTML = packages.map(pkg => `
+                    <div class="package-item">
+                        <div class="package-info">
+                            <div class="package-id">${pkg.id}</div>
+                            <div class="package-details">
+                                <span class="weight">${pkg.weight}</span>
+                                <span class="destination">${pkg.destination}</span>
+                            </div>
+                        </div>
+                        ${pkg.status === 'pending' ? `
+                            <button class="distribute-button" data-package-id="${pkg.id}">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M7.5 15L12.5 10L7.5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        ` : ''}
+                    </div>
+                `).join('');
+
+                // Add click handlers for distribute buttons
+                if (list.querySelectorAll('.distribute-button').length > 0) {
+                    list.querySelectorAll('.distribute-button').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const packageId = this.getAttribute('data-package-id');
+                            console.log(`Distributing package ${packageId}`);
+                            // Here you would implement the distribution logic
+                            // For demo purposes, we'll show a simple alert
+                            alert(`Package ${packageId} distributed!`);
+                        });
+                    });
+                }
+            }
+
+            renderPackageList(pendingPackages, '.package-list:not(.distributed)');
+            renderPackageList(distributedPackages, '.package-list.distributed');
+
+            // Search functionality
+            const searchInput = document.querySelector('.search-input');
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredPending = pendingPackages.filter(pkg => 
+                    pkg.id.toLowerCase().includes(searchTerm) || 
+                    pkg.destination.toLowerCase().includes(searchTerm)
+                );
+                const filteredDistributed = distributedPackages.filter(pkg => 
+                    pkg.id.toLowerCase().includes(searchTerm) || 
+                    pkg.destination.toLowerCase().includes(searchTerm)
+                );
+                
+                renderPackageList(filteredPending, '.package-list:not(.distributed)');
+                renderPackageList(filteredDistributed, '.package-list.distributed');
+            });
+
+            // Start Distribution button handler
+            document.querySelector('.primary-button').addEventListener('click', function() {
+                // Implement distribution workflow
+                console.log('Starting distribution process...');
+                alert('Starting distribution process!');
+            });
+        });
+    </script>
+</body>
+</html> 

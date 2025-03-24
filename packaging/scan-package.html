@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>打包校验 - 物流仓储管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+    <style>
+        /* iOS-like styling */
+        :root {
+            --ios-background: #F2F2F7;
+            --ios-card-background: #FFFFFF;
+            --ios-blue: #007AFF;
+            --ios-gray: #8E8E93;
+            --ios-border: #C5C5C7;
+            --ios-success: #34C759;
+            --ios-red: #FF3B30;
+            --ios-orange: #FF9500;
+        }
+
+        body {
+            background: var(--ios-background);
+        }
+
+        .header {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(60, 60, 67, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+        }
+
+        .scan-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            margin-bottom: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .scan-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-frame {
+            width: 220px;
+            height: 220px;
+            border: 2px solid var(--ios-blue);
+            border-radius: 16px;
+            position: relative;
+            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.5);
+        }
+
+        .scan-corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-color: var(--ios-blue);
+            border-style: solid;
+            border-width: 0;
+        }
+
+        .top-left {
+            top: -2px;
+            left: -2px;
+            border-top-width: 4px;
+            border-left-width: 4px;
+            border-top-left-radius: 8px;
+        }
+
+        .top-right {
+            top: -2px;
+            right: -2px;
+            border-top-width: 4px;
+            border-right-width: 4px;
+            border-top-right-radius: 8px;
+        }
+
+        .bottom-left {
+            bottom: -2px;
+            left: -2px;
+            border-bottom-width: 4px;
+            border-left-width: 4px;
+            border-bottom-left-radius: 8px;
+        }
+
+        .bottom-right {
+            bottom: -2px;
+            right: -2px;
+            border-bottom-width: 4px;
+            border-right-width: 4px;
+            border-bottom-right-radius: 8px;
+        }
+
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: var(--ios-blue);
+            top: 50%;
+            animation: scan 2s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { top: 20%; }
+            50% { top: 80%; }
+            100% { top: 20%; }
+        }
+
+        .scan-text {
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            margin-top: 24px;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .scan-button {
+            margin-top: 16px;
+            background: var(--ios-blue);
+            color: white;
+            border-radius: 20px;
+            padding: 8px 20px;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .info-section {
+            background: white;
+            border-radius: 12px;
+            margin: 16px;
+            padding: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .package-info {
+            margin-top: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--ios-background);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--ios-gray);
+            font-size: 15px;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: #111827;
+            font-size: 15px;
+        }
+
+        .result-section {
+            display: none;
+            margin: 16px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .result-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .status-icon {
+            font-size: 36px;
+            margin-right: 12px;
+        }
+
+        .status-icon.success {
+            color: var(--ios-success);
+        }
+
+        .status-icon.error {
+            color: var(--ios-red);
+        }
+
+        .status-icon.warning {
+            color: var(--ios-orange);
+        }
+
+        .status-text {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .status-text.success {
+            color: var(--ios-success);
+        }
+
+        .status-text.error {
+            color: var(--ios-red);
+        }
+
+        .status-text.warning {
+            color: var(--ios-orange);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .action-button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .primary-button {
+            background: var(--ios-blue);
+            color: white;
+        }
+
+        .secondary-button {
+            background: #E5E5EA;
+            color: #3A3A3C;
+        }
+
+        .issues-list {
+            margin-top: 16px;
+        }
+
+        .issue-item {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--ios-background);
+        }
+
+        .issue-item:last-child {
+            border-bottom: none;
+        }
+
+        .issue-icon {
+            color: var(--ios-red);
+            font-size: 20px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .issue-text {
+            font-size: 15px;
+            color: #1C1C1E;
+            flex: 1;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            pointer-events: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Camera view */
+        .camera-view {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #000;
+        }
+
+        /* Recent scans */
+        .recent-scans {
+            margin: 16px;
+        }
+
+        .recent-header {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #1C1C1E;
+        }
+
+        .scan-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+        }
+
+        .scan-item-icon {
+            font-size: 24px;
+            color: var(--ios-blue);
+            margin-right: 16px;
+        }
+
+        .scan-item-content {
+            flex: 1;
+        }
+
+        .scan-item-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 4px;
+            color: #1C1C1E;
+        }
+
+        .scan-item-subtitle {
+            font-size: 13px;
+            color: var(--ios-gray);
+        }
+
+        .scan-item-timestamp {
+            font-size: 12px;
+            color: var(--ios-gray);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="flex justify-between items-center w-full">
+            <h1 class="text-base font-semibold" data-i18n="packaging.scanPackage">打包校验</h1>
+            <a href="../index.html" class="flex items-center justify-center">
+                <i class="mdi mdi-close text-gray-700 text-xl"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container pb-safe">
+        <!-- Scanning Section -->
+        <div class="scan-container" id="scan-container">
+            <video id="camera-view" class="camera-view" autoplay playsinline></video>
+            <div class="scan-overlay">
+                <div class="scan-frame">
+                    <div class="scan-corner top-left"></div>
+                    <div class="scan-corner top-right"></div>
+                    <div class="scan-corner bottom-left"></div>
+                    <div class="scan-corner bottom-right"></div>
+                    <div class="scan-line"></div>
+                </div>
+                <div class="scan-text" data-i18n="packaging.scanPrompt">
+                    请将包裹条码对准扫描框
+                </div>
+                <button id="start-scan" class="scan-button" data-i18n="common.startScan">
+                    开始扫描
+                </button>
+            </div>
+        </div>
+
+        <!-- Package Info Section (Initially Hidden) -->
+        <div class="info-section" id="package-info" style="display: none;">
+            <h3 class="text-base font-semibold" data-i18n="packaging.packageInfo">包裹信息</h3>
+            <div class="package-info">
+                <div class="info-row">
+                    <span class="info-label" data-i18n="packaging.packageId">包裹编号</span>
+                    <span class="info-value" id="package-id">PKG2024051500123</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label" data-i18n="packaging.packageType">包裹类型</span>
+                    <span class="info-value" id="package-type" data-i18n="common.standard">标准</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label" data-i18n="packaging.weight">重量</span>
+                    <span class="info-value" id="package-weight">2.5 kg</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label" data-i18n="packaging.dimensions">尺寸</span>
+                    <span class="info-value" id="package-dimensions">30 × 25 × 15 cm</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label" data-i18n="packaging.destination">目的地</span>
+                    <span class="info-value" id="package-destination">上海市</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Result Section (Initially Hidden) -->
+        <div class="result-section" id="result-section">
+            <!-- Success Result -->
+            <div class="result-card" id="success-result" style="display: none;">
+                <div class="result-status">
+                    <i class="mdi mdi-check-circle status-icon success"></i>
+                    <span class="status-text success" data-i18n="packaging.verificationSuccess">校验通过</span>
+                </div>
+                <p class="text-center text-gray-600 mb-4" data-i18n="packaging.successMessage">
+                    包裹信息已校验通过，可以进行打包处理
+                </p>
+                <div class="action-buttons">
+                    <button class="action-button primary-button" id="package-button" data-i18n="packaging.packageNow">
+                        <i class="mdi mdi-package-variant-closed mr-2"></i> 立即打包
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error Result -->
+            <div class="result-card" id="error-result" style="display: none;">
+                <div class="result-status">
+                    <i class="mdi mdi-close-circle status-icon error"></i>
+                    <span class="status-text error" data-i18n="packaging.verificationFailed">校验失败</span>
+                </div>
+                <p class="text-center text-gray-600 mb-4" data-i18n="packaging.errorMessage">
+                    包裹信息校验失败，请查看以下问题
+                </p>
+                <div class="issues-list">
+                    <div class="issue-item">
+                        <i class="mdi mdi-alert-circle issue-icon"></i>
+                        <span class="issue-text" data-i18n="packaging.weightDiscrepancy">
+                            包裹重量与系统记录不符
+                        </span>
+                    </div>
+                    <div class="issue-item">
+                        <i class="mdi mdi-alert-circle issue-icon"></i>
+                        <span class="issue-text" data-i18n="packaging.sizeDiscrepancy">
+                            包裹尺寸超出标准范围
+                        </span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-button secondary-button" id="rescan-button" data-i18n="packaging.rescan">
+                        <i class="mdi mdi-qrcode-scan mr-2"></i> 重新扫描
+                    </button>
+                    <button class="action-button primary-button" id="override-button" data-i18n="packaging.overrideAndPackage">
+                        <i class="mdi mdi-shield-check mr-2"></i> 确认打包
+                    </button>
+                </div>
+            </div>
+
+            <!-- Warning Result -->
+            <div class="result-card" id="warning-result" style="display: none;">
+                <div class="result-status">
+                    <i class="mdi mdi-alert-circle status-icon warning"></i>
+                    <span class="status-text warning" data-i18n="packaging.verificationWarning">需要注意</span>
+                </div>
+                <p class="text-center text-gray-600 mb-4" data-i18n="packaging.warningMessage">
+                    包裹校验有以下注意事项
+                </p>
+                <div class="issues-list">
+                    <div class="issue-item">
+                        <i class="mdi mdi-alert issue-icon" style="color: var(--ios-orange);"></i>
+                        <span class="issue-text" data-i18n="packaging.specialHandling">
+                            需要特殊处理，请使用加强包装
+                        </span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="action-button secondary-button" id="rescan-warning-button" data-i18n="packaging.rescan">
+                        <i class="mdi mdi-qrcode-scan mr-2"></i> 重新扫描
+                    </button>
+                    <button class="action-button primary-button" id="confirm-warning-button" data-i18n="packaging.confirmAndPackage">
+                        <i class="mdi mdi-package-variant-closed mr-2"></i> 确认打包
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Scans Section -->
+        <div class="recent-scans">
+            <h3 class="recent-header" data-i18n="reception.recentScans">最近扫描</h3>
+            <div class="scan-list">
+                <!-- Recent scan items will be dynamically added here -->
+            </div>
+        </div>
+    </main>
+    
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="../js/i18n.js" type="module"></script>
+    <script type="module">
+        import i18n from '../js/i18n.js';
+        
+        // Initialize i18n
+        await i18n.init();
+        
+        // DOM Elements
+        const scanContainer = document.getElementById('scan-container');
+        const packageInfo = document.getElementById('package-info');
+        const resultSection = document.getElementById('result-section');
+        const successResult = document.getElementById('success-result');
+        const errorResult = document.getElementById('error-result');
+        const warningResult = document.getElementById('warning-result');
+        const startScanButton = document.getElementById('start-scan');
+        const packageButton = document.getElementById('package-button');
+        const rescanButton = document.getElementById('rescan-button');
+        const overrideButton = document.getElementById('override-button');
+        const rescanWarningButton = document.getElementById('rescan-warning-button');
+        const confirmWarningButton = document.getElementById('confirm-warning-button');
+        const toast = document.getElementById('toast');
+        const scanList = document.querySelector('.scan-list');
+        const cameraView = document.getElementById('camera-view');
+        
+        // Variables for camera handling
+        let stream = null;
+        let scanning = false;
+        
+        // Function to start camera and begin scanning
+        async function startScanning() {
+            if (!scanning) {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'environment' }
+                    });
+                    
+                    cameraView.srcObject = stream;
+                    scanning = true;
+                    startScanButton.innerHTML = i18n.translate('common.stopScan');
+                    
+                    // After a simulated delay, show a successful scan
+                    setTimeout(() => {
+                        simulateScan();
+                    }, 3000);
+                    
+                } catch (err) {
+                    showToast(i18n.translate('messages.cameraError'));
+                    console.error('Error accessing camera:', err);
+                }
+            } else {
+                stopScanning();
+            }
+        }
+        
+        // Function to stop scanning
+        function stopScanning() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            scanning = false;
+            startScanButton.innerHTML = i18n.translate('common.startScan');
+        }
+        
+        // Simulate a package scan
+        function simulateScan() {
+            // Simulate vibration feedback
+            if ('vibrate' in navigator) {
+                navigator.vibrate([10, 100, 10]);
+            }
+            
+            // Generate a random package type (for demo)
+            const packageTypes = ['success', 'error', 'warning'];
+            const randomType = packageTypes[Math.floor(Math.random() * packageTypes.length)];
+            
+            // Show the package info section
+            scanContainer.style.display = 'none';
+            packageInfo.style.display = 'block';
+            resultSection.style.display = 'block';
+            
+            // Fill package details (in a real app this would come from scanning)
+            document.getElementById('package-id').textContent = `PKG${Math.floor(Math.random() * 1000000000).toString().padStart(12, '0')}`;
+            
+            // Show appropriate result based on random type
+            showResult(randomType);
+            
+            // Add to recent scans
+            addRecentScan(document.getElementById('package-id').textContent, randomType);
+            
+            // Stop scanning
+            stopScanning();
+        }
+        
+        // Function to show scan result
+        function showResult(type) {
+            // Hide all results first
+            successResult.style.display = 'none';
+            errorResult.style.display = 'none';
+            warningResult.style.display = 'none';
+            
+            // Show the appropriate result
+            switch (type) {
+                case 'success':
+                    successResult.style.display = 'block';
+                    break;
+                case 'error':
+                    errorResult.style.display = 'block';
+                    break;
+                case 'warning':
+                    warningResult.style.display = 'block';
+                    break;
+            }
+        }
+        
+        // Function to add a scan to recent scans
+        function addRecentScan(packageId, result) {
+            // Create scan item elements
+            const scanItem = document.createElement('div');
+            scanItem.className = 'scan-item';
+            
+            // Set icon based on result
+            let iconClass = 'mdi-package-variant';
+            let resultText = '';
+            
+            switch (result) {
+                case 'success':
+                    iconClass = 'mdi-check-circle';
+                    resultText = i18n.translate('packaging.verificationSuccess');
+                    break;
+                case 'error':
+                    iconClass = 'mdi-close-circle';
+                    resultText = i18n.translate('packaging.verificationFailed');
+                    break;
+                case 'warning':
+                    iconClass = 'mdi-alert-circle';
+                    resultText = i18n.translate('packaging.verificationWarning');
+                    break;
+            }
+            
+            // Build the HTML for the scan item
+            scanItem.innerHTML = `
+                <i class="mdi ${iconClass} scan-item-icon"></i>
+                <div class="scan-item-content">
+                    <div class="scan-item-title">${packageId}</div>
+                    <div class="scan-item-subtitle">${resultText}</div>
+                </div>
+                <div class="scan-item-timestamp">刚刚</div>
+            `;
+            
+            // Add the new scan to the top of the list
+            scanList.insertBefore(scanItem, scanList.firstChild);
+        }
+        
+        // Function to show a toast message
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Function to reset the scan view
+        function resetScan() {
+            scanContainer.style.display = 'block';
+            packageInfo.style.display = 'none';
+            resultSection.style.display = 'none';
+        }
+        
+        // Function to simulate package completion
+        function completePackaging() {
+            showToast(i18n.translate('packaging.packageSuccess'));
+            
+            setTimeout(() => {
+                resetScan();
+            }, 1500);
+        }
+        
+        // Event Listeners
+        startScanButton.addEventListener('click', startScanning);
+        
+        packageButton.addEventListener('click', () => {
+            completePackaging();
+        });
+        
+        rescanButton.addEventListener('click', () => {
+            resetScan();
+        });
+        
+        overrideButton.addEventListener('click', () => {
+            showToast(i18n.translate('packaging.overrideSuccess'));
+            setTimeout(() => {
+                resetScan();
+            }, 1500);
+        });
+        
+        rescanWarningButton.addEventListener('click', () => {
+            resetScan();
+        });
+        
+        confirmWarningButton.addEventListener('click', () => {
+            completePackaging();
+        });
+        
+        // Listen for language change events
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.action === 'switchLanguage') {
+                i18n.setLanguage(event.data.lang);
+            }
+        });
+        
+        // Add some demo items to recent scans
+        setTimeout(() => {
+            addRecentScan('PKG202405150098', 'success');
+            addRecentScan('PKG202405150076', 'warning');
+            addRecentScan('PKG202405150053', 'error');
+        }, 500);
+    </script>
+</body>
+</html> 

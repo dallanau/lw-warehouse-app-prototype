@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>主页 - 物流仓储管理</title>
+    <!-- 
+        Note: In production, Tailwind CSS should be installed as a PostCSS plugin or using the Tailwind CLI
+        For this prototype, we're using the CDN for simplicity
+        See: https://tailwindcss.com/docs/installation for production setup
+    -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+    <style>
+        /* iOS System Font */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600&display=swap');
+        
+        :root {
+            --ios-background: #F2F2F7;
+            --ios-secondary-background: #FFFFFF;
+            --ios-blue: #007AFF;
+            --ios-gray: #8E8E93;
+            --ios-separator: rgba(60, 60, 67, 0.1);
+            --card-padding: 16px;
+        }
+
+        body {
+            font-family: -apple-system, 'SF Pro Text', 'Noto Sans SC', sans-serif;
+            background-color: var(--ios-background);
+            -webkit-font-smoothing: antialiased;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .header {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--ios-separator);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+        }
+
+        .container {
+            padding-left: 0;
+            padding-right: 0;
+            max-width: 100%;
+        }
+        
+        .header > div {
+            padding: 0 16px;
+            width: 100%;
+        }
+
+        .card {
+            background: var(--ios-secondary-background);
+            border-radius: 12px;
+            border: none;
+            margin: 0 16px 20px 16px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            padding: 0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #000000;
+            margin: 0 16px 12px 16px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: var(--ios-secondary-background);
+            border-bottom: 1px solid var(--ios-separator);
+            transition: background-color 0.2s;
+        }
+
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+
+        .menu-item:active {
+            background-color: #F2F2F7;
+        }
+
+        .menu-item i {
+            color: #007AFF;
+            font-size: 22px;
+            margin-right: 12px;
+            width: 22px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .menu-item-text {
+            flex: 1;
+            font-size: 1rem;
+            color: #1C1C1E;
+        }
+
+        .menu-item-arrow {
+            color: #C7C7CC;
+        }
+
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid var(--ios-separator);
+            padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+            padding-top: 0.5rem;
+        }
+
+        .nav-bar a {
+            padding: 0.25rem 0;
+            color: #8E8E93;
+        }
+
+        .nav-bar a.active {
+            color: #007AFF;
+        }
+
+        .nav-bar i {
+            font-size: 1.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .avatar-small {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--ios-background);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .avatar-small img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-small .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ios-blue);
+            font-size: 24px;
+            background-color: var(--ios-background);
+        }
+
+        .operator-status-card {
+            border-radius: 12px;
+            padding: var(--card-padding);
+            background-color: white;
+            margin: 16px 16px 20px 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .status-text {
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 1.4;
+            margin-right: 4px;
+        }
+
+        .status-badge {
+            background-color: rgba(52, 199, 89, 0.1);
+            color: #34C759;
+            padding: 1px 6px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .location-text {
+            color: #8E8E93;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        main {
+            padding: 0;
+        }
+    </style>
+    <script>
+        // Define a temporary global switchLanguage function to prevent errors
+        // Will be replaced by the real implementation when the module loads
+        window.switchLanguage = function(lang) {
+            console.log('Language module still loading...');
+        };
+    </script>
+</head>
+<body>
+    <div class="container pb-12">
+        <!-- Header -->
+        <header class="header">
+            <div class="flex justify-between items-center w-full">
+                <h1 class="text-base font-semibold" data-i18n="nav.dashboard">主页</h1>
+                <a href="profile.html" class="flex items-center justify-center">
+                    <i class="mdi mdi-cog text-gray-700 text-xl"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="px-0 pb-0">
+            <!-- Operator Status Card -->
+            <div class="operator-status-card">
+                <div class="flex items-center">
+                    <!-- Avatar Section -->
+                    <div class="avatar-small mr-3" style="background-color: #F2F2F7;">
+                        <div id="avatar-placeholder" class="avatar-placeholder">
+                            <i class="mdi mdi-account text-gray-400"></i>
+                        </div>
+                        <img id="avatar-img" class="hidden" src="" alt="操作员头像">
+                    </div>
+                    
+                    <!-- Info Section -->
+                    <div class="flex-1">
+                        <div class="flex items-center mb-1">
+                            <span class="status-text" data-i18n="common.operatorStatus">操作员状态</span>
+                            <span class="status-badge" data-i18n="common.online">在线</span>
+                        </div>
+                        <div class="text-gray-700 mb-1">
+                            <span data-i18n="common.accountNumber">工号</span>: WH-42815
+                        </div>
+                        <div class="location-text">
+                            <i class="mdi mdi-map-marker text-gray-400 mr-1"></i>
+                            <span data-i18n="common.location">深圳南山仓/前海网点</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reception Management Section -->
+            <h2 class="section-title" data-i18n="nav.reception">签收</h2>
+            <div class="card mb-6">
+                <a href="reception/scan.html" class="menu-item">
+                    <i class="mdi mdi-qrcode-scan text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="reception.scanReception">扫描签收</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+                <a href="reception/inventory.html" class="menu-item">
+                    <i class="mdi mdi-package-variant text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="reception.signedInventory">已签包裹</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+                <a href="reception/member-binding.html" class="menu-item">
+                    <i class="mdi mdi-account-check text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="reception.memberBinding">会员绑定</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+                <a href="reception/entry.html" class="menu-item">
+                    <i class="mdi mdi-clipboard-text text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="reception.entryManagement">录入</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+                <a href="reception/warehouse-entry.html" class="menu-item">
+                    <i class="mdi mdi-package-variant-closed text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="reception.warehouseEntry">入库</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+                <a href="reception/warehouse-exit.html" class="menu-item">
+                    <i class="mdi mdi-logout text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="reception.warehouseExit">出库</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+            </div>
+
+            <!-- Packaging Operations Section -->
+            <h2 class="section-title" data-i18n="nav.packaging">打包</h2>
+            <div class="card mb-6">
+                <a href="packaging/scan-package.html" class="menu-item">
+                    <i class="mdi mdi-package-variant text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="packaging.scanPackage">打包校验</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+                <a href="packaging/scan-weighing.html" class="menu-item">
+                    <i class="mdi mdi-scale text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="packaging.scanWeighing">扫描称重</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+                <a href="packaging/distribution.html" class="menu-item">
+                    <i class="mdi mdi-truck-delivery text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="packaging.packageDistribution">包裹分发</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+                <a href="packaging/shipping.html" class="menu-item">
+                    <i class="mdi mdi-airplane text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="packaging.shipping">发货</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+            </div>
+
+            <!-- Network Point Section -->
+            <h2 class="section-title" data-i18n="nav.network">网点</h2>
+            <div class="card">
+                <a href="network/pickup.html" class="menu-item">
+                    <i class="mdi mdi-truck-delivery text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="network.scanPickup">扫描提取</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+                <a href="network/tracking.html" class="menu-item">
+                    <i class="mdi mdi-package-variant-closed text-blue-500"></i>
+                    <span class="menu-item-text" data-i18n="network.inStock">在库运单</span>
+                    <i class="mdi mdi-chevron-right menu-item-arrow"></i>
+                </a>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="nav-bar fixed bottom-0 left-0 right-0">
+            <div class="grid grid-cols-3 gap-2 px-2">
+                <a href="#" class="text-center active">
+                    <i class="mdi mdi-view-dashboard"></i>
+                    <div class="nav-label" data-i18n="nav.dashboard">主页</div>
+                </a>
+                <a href="scan.html" class="text-center">
+                    <i class="mdi mdi-qrcode-scan"></i>
+                    <div class="nav-label" data-i18n="common.scan">扫描</div>
+                </a>
+                <a href="profile.html" class="text-center">
+                    <i class="mdi mdi-account"></i>
+                    <div class="nav-label" data-i18n="common.profile">个人中心</div>
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <script type="module">
+        import i18n from './js/i18n.js';
+
+        // Check authentication
+        if (!localStorage.getItem('isLoggedIn')) {
+            window.location.href = 'login.html';
+        }
+
+        // Initialize i18n
+        await i18n.init();
+
+        // Load avatar if exists
+        const savedAvatar = localStorage.getItem('userAvatar');
+        const avatarPlaceholder = document.getElementById('avatar-placeholder');
+        const avatarImg = document.getElementById('avatar-img');
+        
+        if (savedAvatar) {
+            avatarPlaceholder.classList.add('hidden');
+            avatarImg.classList.remove('hidden');
+            avatarImg.src = savedAvatar;
+        }
+
+        // Add active state to menu items
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('touchstart', () => {
+                item.style.backgroundColor = '#F2F2F7';
+            });
+            item.addEventListener('touchend', () => {
+                item.style.backgroundColor = '';
+            });
+        });
+    </script>
+</body>
+</html> 

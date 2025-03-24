@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>出库 - 物流仓储管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+    <style>
+        /* iOS-like styling */
+        :root {
+            --ios-background: #F2F2F7;
+            --ios-card-background: #FFFFFF;
+            --ios-blue: #007AFF;
+            --ios-gray: #8E8E93;
+            --ios-border: #C5C5C7;
+            --ios-success: #34C759;
+            --ios-red: #FF3B30;
+        }
+
+        body {
+            background: var(--ios-background);
+        }
+
+        .warehouse-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-section {
+            background: var(--ios-card-background);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--ios-gray);
+            margin-bottom: 8px;
+            display: block;
+            padding-left: 4px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--ios-border);
+            border-radius: 10px;
+            font-size: 17px;
+            background: var(--ios-card-background);
+            transition: all 0.2s ease;
+        }
+
+        .form-input::placeholder {
+            color: var(--ios-gray);
+            opacity: 0.5;
+        }
+
+        .scan-button {
+            position: absolute;
+            right: 12px;
+            top: calc(50% + 14px);
+            transform: translateY(-50%);
+            color: var(--ios-blue);
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            width: 40px;
+            transition: transform 0.2s ease;
+        }
+
+        .scan-button i {
+            font-size: 24px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scan-button:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .package-info {
+            background: var(--ios-background);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 0;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: var(--ios-gray);
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .location-info {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--ios-background);
+            border-radius: 10px;
+            margin-bottom: 16px;
+        }
+
+        .location-info i {
+            color: var(--ios-blue);
+            font-size: 24px;
+            margin-right: 12px;
+        }
+
+        .location-text {
+            flex: 1;
+        }
+
+        .location-label {
+            font-size: 13px;
+            color: var(--ios-gray);
+            margin-bottom: 2px;
+        }
+
+        .location-value {
+            font-size: 17px;
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 16px;
+            background: var(--ios-red);
+            color: white;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 17px;
+            margin-top: 8px;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .submit-button:active {
+            transform: scale(0.98);
+            background: #E0352B;
+        }
+
+        /* iOS-like toast */
+        .toast {
+            position: fixed;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Adjust input padding when scan button is present */
+        .form-input.pr-12 {
+            padding-right: 52px;
+        }
+
+        /* Adjust textarea padding */
+        textarea.form-input {
+            padding: 12px 16px;
+            min-height: 80px;
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="flex justify-between items-center w-full">
+            <h1 class="text-base font-semibold" data-i18n="reception.warehouseExit">出库</h1>
+            <a href="../index.html" class="flex items-center justify-center">
+                <i class="mdi mdi-close text-gray-700 text-xl"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container pb-safe">
+        <form class="warehouse-form">
+            <!-- Package Scan Section -->
+            <div class="form-section">
+                <div class="form-group relative">
+                    <label class="form-label" data-i18n="warehouse.scanPackage">扫描包裹</label>
+                    <input type="text" class="form-input pr-12" data-i18n-placeholder="warehouse.scanPackagePlaceholder">
+                    <button type="button" class="scan-button">
+                        <i class="mdi mdi-qrcode-scan text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Package Info Section -->
+            <div class="form-section" id="packageInfo" style="display: none;">
+                <div class="package-info">
+                    <div class="info-row">
+                        <span class="info-label" data-i18n="warehouse.packageId">包裹编号</span>
+                        <span class="info-value">PKG20240315001</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label" data-i18n="warehouse.type">类型</span>
+                        <span class="info-value" data-i18n="warehouse.standard">标准</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label" data-i18n="warehouse.weight">重量</span>
+                        <span class="info-value">2.5 kg</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label" data-i18n="warehouse.dimensions">尺寸</span>
+                        <span class="info-value">30 × 20 × 15 cm</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location Info Section -->
+            <div class="form-section" id="locationInfo" style="display: none;">
+                <div class="location-info">
+                    <i class="mdi mdi-map-marker"></i>
+                    <div class="location-text">
+                        <div class="location-label" data-i18n="warehouse.currentLocation">当前位置</div>
+                        <div class="location-value">A12-3</div>
+                    </div>
+                </div>
+
+                <!-- Verify Location -->
+                <div class="form-group relative">
+                    <label class="form-label" data-i18n="warehouse.verifyLocation">验证位置</label>
+                    <input type="text" class="form-input pr-12" data-i18n-placeholder="warehouse.scanLocationPlaceholder">
+                    <button type="button" class="scan-button">
+                        <i class="mdi mdi-qrcode-scan text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label class="form-label" data-i18n="warehouse.exitNotes">出库备注</label>
+                    <textarea class="form-input" rows="2" data-i18n-placeholder="warehouse.exitNotesPlaceholder"></textarea>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-button" data-i18n="warehouse.confirmExit" style="display: none;">
+                确认出库
+            </button>
+        </form>
+    </main>
+
+    <script src="../js/i18n.js" type="module"></script>
+    <script type="module">
+        import i18n from '../js/i18n.js';
+        
+        // Initialize i18n
+        await i18n.init();
+
+        // Get DOM elements
+        const packageInfo = document.getElementById('packageInfo');
+        const locationInfo = document.getElementById('locationInfo');
+        const submitButton = document.querySelector('.submit-button');
+        const scanButtons = document.querySelectorAll('.scan-button');
+
+        // Package scanning
+        scanButtons[0].addEventListener('click', () => {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(10);
+            }
+            
+            // Simulate package scan
+            const packageInput = document.querySelector('input[type="text"]');
+            packageInput.value = 'PKG' + Math.random().toString(36).substr(2, 8).toUpperCase();
+            packageInput.focus();
+            
+            // Show package info and location sections
+            packageInfo.style.display = 'block';
+            locationInfo.style.display = 'block';
+            submitButton.style.display = 'block';
+        });
+
+        // Location verification scanning
+        scanButtons[1].addEventListener('click', () => {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(10);
+            }
+            
+            const locationInput = document.querySelectorAll('input[type="text"]')[1];
+            locationInput.value = 'A12-3';
+            locationInput.focus();
+        });
+
+        // Form submission
+        document.querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Show iOS-style toast
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.setAttribute('data-i18n', 'warehouse.exitSuccess');
+            toast.textContent = '包裹已成功出库';
+            document.body.appendChild(toast);
+            
+            // Trigger reflow for animation
+            toast.offsetHeight;
+            toast.classList.add('show');
+            
+            // Haptic feedback
+            if ('vibrate' in navigator) {
+                navigator.vibrate([10, 30, 10]); // Success pattern
+            }
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+            
+            // Reset form with animation
+            const form = e.target;
+            form.style.opacity = '0.5';
+            setTimeout(() => {
+                form.reset();
+                packageInfo.style.display = 'none';
+                locationInfo.style.display = 'none';
+                submitButton.style.display = 'none';
+                form.style.opacity = '1';
+            }, 300);
+        });
+    </script>
+</body>
+</html> 

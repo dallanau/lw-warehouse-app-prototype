@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>入库 - 物流仓储管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+    <style>
+        /* iOS-like styling */
+        :root {
+            --ios-background: #F2F2F7;
+            --ios-card-background: #FFFFFF;
+            --ios-blue: #007AFF;
+            --ios-gray: #8E8E93;
+            --ios-border: #C5C5C7;
+            --ios-success: #34C759;
+        }
+
+        body {
+            background: var(--ios-background);
+        }
+
+        .warehouse-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-section {
+            background: var(--ios-card-background);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--ios-gray);
+            margin-bottom: 8px;
+            display: block;
+            padding-left: 4px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--ios-border);
+            border-radius: 10px;
+            font-size: 17px;
+            background: var(--ios-card-background);
+            transition: all 0.2s ease;
+        }
+
+        .form-input::placeholder {
+            color: var(--ios-gray);
+            opacity: 0.5;
+        }
+
+        .scan-button {
+            position: absolute;
+            right: 12px;
+            top: calc(50% + 14px);
+            transform: translateY(-50%);
+            color: var(--ios-blue);
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 40px;
+            width: 40px;
+            transition: transform 0.2s ease;
+        }
+
+        .scan-button i {
+            font-size: 24px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -1px; /* Fine-tune icon position */
+        }
+
+        .scan-button:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+
+        .location-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .location-input {
+            text-align: center;
+            font-size: 17px;
+            font-weight: 500;
+            padding: 12px 8px;
+        }
+
+        .storage-type {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 0;
+        }
+
+        .storage-option {
+            flex: 1;
+            padding: 12px 8px;
+            border: 1.5px solid var(--ios-border);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 15px;
+            font-weight: 500;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .storage-option.selected {
+            background: var(--ios-blue);
+            color: white;
+            border-color: var(--ios-blue);
+            transform: scale(0.98);
+        }
+
+        .storage-option:not(.selected):active {
+            background: rgba(0,122,255,0.1);
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 16px;
+            background: var(--ios-blue);
+            color: white;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 17px;
+            margin-top: 8px;
+            transition: all 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .submit-button:active {
+            transform: scale(0.98);
+            background: #0051A8;
+        }
+
+        .package-info {
+            background: var(--ios-background);
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 0;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: var(--ios-gray);
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        /* iOS-like toast */
+        .toast {
+            position: fixed;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* iOS-like placeholder color */
+        ::placeholder {
+            color: var(--ios-gray);
+            opacity: 0.5;
+        }
+
+        .location-hint {
+            color: var(--ios-gray);
+            font-size: 13px;
+            margin-top: 8px;
+            margin-left: 4px;
+            opacity: 0.8;
+        }
+
+        /* Adjust input padding when scan button is present */
+        .form-input.pr-12 {
+            padding-right: 52px;
+        }
+
+        /* Adjust textarea padding */
+        textarea.form-input {
+            padding: 12px 16px;
+            min-height: 80px;
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="flex justify-between items-center w-full">
+            <h1 class="text-base font-semibold" data-i18n="reception.warehouseEntry">入库</h1>
+            <a href="../index.html" class="flex items-center justify-center">
+                <i class="mdi mdi-close text-gray-700 text-xl"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container pb-safe">
+        <form class="warehouse-form">
+            <!-- Package Info Section -->
+            <div class="form-section">
+                <div class="package-info">
+                    <div class="info-row">
+                        <span class="info-label" data-i18n="warehouse.packageId">包裹编号</span>
+                        <span class="info-value">PKG20240315001</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label" data-i18n="warehouse.type">类型</span>
+                        <span class="info-value" data-i18n="warehouse.standard">标准</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label" data-i18n="warehouse.weight">重量</span>
+                        <span class="info-value">2.5 kg</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label" data-i18n="warehouse.dimensions">尺寸</span>
+                        <span class="info-value">30 × 20 × 15 cm</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storage Section -->
+            <div class="form-section">
+                <!-- Storage Type -->
+                <div class="form-group">
+                    <label class="form-label" data-i18n="warehouse.storageType">存储类型</label>
+                    <div class="storage-type">
+                        <div class="storage-option selected" data-type="normal">
+                            <span data-i18n="warehouse.normalStorage">普通货架</span>
+                        </div>
+                        <div class="storage-option" data-type="cold">
+                            <span data-i18n="warehouse.coldStorage">冷藏区</span>
+                        </div>
+                        <div class="storage-option" data-type="valuable">
+                            <span data-i18n="warehouse.valuableStorage">贵重区</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location Input -->
+                <div class="form-group">
+                    <label class="form-label" data-i18n="warehouse.location">货架位置</label>
+                    <div class="location-grid">
+                        <input type="text" class="form-input location-input" placeholder="区" maxlength="1" pattern="[A-Z]">
+                        <input type="number" class="form-input location-input" placeholder="排" min="1" max="99">
+                        <input type="number" class="form-input location-input" placeholder="层" min="1" max="9">
+                    </div>
+                    <p class="location-hint" data-i18n="warehouse.locationHint">
+                        例如: A12-3 表示A区12排3层
+                    </p>
+                </div>
+
+                <!-- Scan Location -->
+                <div class="form-group relative">
+                    <label class="form-label" data-i18n="warehouse.scanLocation">扫描货架码</label>
+                    <input type="text" class="form-input pr-12" data-i18n-placeholder="warehouse.scanLocationPlaceholder">
+                    <button type="button" class="scan-button">
+                        <i class="mdi mdi-qrcode-scan text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label class="form-label" data-i18n="warehouse.notes">备注</label>
+                    <textarea class="form-input" rows="2" data-i18n-placeholder="warehouse.notesPlaceholder"></textarea>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-button" data-i18n="warehouse.submit">
+                确认入库
+            </button>
+        </form>
+    </main>
+
+    <script src="../js/i18n.js" type="module"></script>
+    <script type="module">
+        import i18n from '../js/i18n.js';
+        
+        // Initialize i18n
+        await i18n.init();
+
+        // Storage type selection with haptic feedback
+        document.querySelectorAll('.storage-option').forEach(option => {
+            option.addEventListener('click', () => {
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(5); // Light haptic feedback
+                }
+                document.querySelectorAll('.storage-option').forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        // Location input formatting
+        const locationInputs = document.querySelectorAll('.location-input');
+        locationInputs[0].addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // Auto-focus next input when filled
+        locationInputs.forEach((input, index) => {
+            input.addEventListener('input', () => {
+                if (input.value.length === input.maxLength && index < locationInputs.length - 1) {
+                    locationInputs[index + 1].focus();
+                }
+            });
+        });
+
+        // QR code scanning simulation with haptic feedback
+        document.querySelector('.scan-button').addEventListener('click', () => {
+            if ('vibrate' in navigator) {
+                navigator.vibrate(10); // Light haptic feedback
+            }
+            
+            const locationInput = document.querySelector('.form-input.pr-12');
+            locationInput.value = 'LOC-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            locationInput.focus();
+        });
+
+        // Form submission
+        document.querySelector('form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Show iOS-style toast
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.setAttribute('data-i18n', 'warehouse.success');
+            toast.textContent = '包裹已成功入库';
+            document.body.appendChild(toast);
+            
+            // Trigger reflow for animation
+            toast.offsetHeight;
+            toast.classList.add('show');
+            
+            // Haptic feedback
+            if ('vibrate' in navigator) {
+                navigator.vibrate([10, 30, 10]); // Success pattern
+            }
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+            
+            // Reset form with animation
+            const form = e.target;
+            form.style.opacity = '0.5';
+            setTimeout(() => {
+                form.reset();
+                document.querySelector('.storage-option.selected').classList.remove('selected');
+                document.querySelector('.storage-option[data-type="normal"]').classList.add('selected');
+                form.style.opacity = '1';
+            }, 300);
+        });
+
+        // Add input validation
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', () => {
+                const value = parseInt(input.value);
+                if (value < parseInt(input.min)) input.value = input.min;
+                if (value > parseInt(input.max)) input.value = input.max;
+            });
+        });
+    </script>
+</body>
+</html> 

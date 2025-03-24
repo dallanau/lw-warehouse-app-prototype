@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物流仓储管理系统预览</title>
+    <!-- 
+        Note: In production, Tailwind CSS should be installed as a PostCSS plugin or using the Tailwind CLI
+        For this prototype, we're using the CDN for simplicity
+        See: https://tailwindcss.com/docs/installation for production setup
+    -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+    <style>
+        :root {
+            --primary-color: #007AFF;
+            --secondary-color: #FF3B30;
+            --tertiary-color: #34C759;
+            --background-color: #F5F5F7;
+            --header-bg: #1A2233;
+            --frame-color: #1A1C22;
+            --frame-border: #333C4D;
+            --ios-text: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--background-color);
+            font-family: var(--ios-text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .navbar {
+            background: var(--header-bg);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            font-size: 22px;
+            color: var(--secondary-color);
+        }
+
+        .frames-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            padding: 40px;
+            justify-content: center;
+            align-items: flex-start;
+            background: linear-gradient(180deg, #F5F5F7 0%, #E9EBEF 100%);
+            overflow-x: hidden;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            min-height: 1080px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .frames-container::-webkit-scrollbar {
+            width: 8px;
+            height: 0;
+            background-color: #F5F5F7;
+        }
+
+        .frame-wrapper {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: none;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .frame-wrapper:hover {
+            transform: none;
+            filter: none;
+        }
+
+        .frame-title {
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            padding: 6px 16px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            letter-spacing: -0.01em;
+        }
+
+        .iphone-frame {
+            position: relative;
+            width: 430px;
+            height: 960px;
+            background: var(--frame-color);
+            border-radius: 55px;
+            padding: 12px;
+            box-shadow: 
+                0 30px 60px -15px rgba(0,0,0,0.3),
+                0 15px 30px -10px rgba(0,0,0,0.2),
+                inset 0 2px 6px rgba(255,255,255,0.1);
+            border: 1px solid var(--frame-border);
+            transition: none;
+            will-change: auto;
+        }
+        
+        /* Longer iPhone frame for screens that need more height */
+        .iphone-frame.tall {
+            height: 980px;
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 45px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+        }
+
+        .status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: rgba(255,255,255,0.98);
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 32px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #000;
+            font-family: var(--ios-text);
+            letter-spacing: -0.01em;
+        }
+
+        .status-bar-left {
+            display: flex;
+            align-items: center;
+            padding-top: 3px;
+        }
+
+        .status-bar-time {
+            font-weight: 600;
+            font-size: 16px;
+            letter-spacing: -0.5px;
+        }
+
+        .status-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-top: 3px;
+        }
+
+        .cellular-icon {
+            position: relative;
+            width: 18px;
+            height: 12px;
+            margin-right: 5px;
+            display: flex;
+            align-items: flex-end;
+            gap: 1px;
+        }
+
+        .cellular-bar {
+            width: 3px;
+            background: #000;
+            border-radius: 1px;
+        }
+
+        .bar-1 { height: 3px; }
+        .bar-2 { height: 5px; }
+        .bar-3 { height: 7px; }
+        .bar-4 { height: 9px; }
+
+        .wifi-icon {
+            position: relative;
+            width: 15px;
+            height: 12px;
+            margin-right: 6px;
+        }
+
+        .wifi-icon::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 15px;
+            height: 15px;
+            border: 2px solid #000;
+            border-top: none;
+            border-left: none;
+            border-radius: 0 0 9px 0;
+            transform: translate(0px, -2px) rotate(45deg);
+        }
+
+        .wifi-icon::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 7px;
+            height: 7px;
+            border: 2px solid #000;
+            border-top: none;
+            border-left: none;
+            border-radius: 0 0 4px 0;
+            transform: translate(4px, 2px) rotate(45deg);
+        }
+
+        .battery-icon {
+            position: relative;
+            width: 26px;
+            height: 13px;
+            border: 1.5px solid #000;
+            border-radius: 3px;
+            padding: 1px;
+        }
+
+        .battery-level {
+            height: 100%;
+            width: 70%;
+            background: #000;
+            border-radius: 1px;
+        }
+
+        .battery-tip {
+            position: absolute;
+            right: -3.5px;
+            top: 3.5px;
+            width: 3px;
+            height: 4px;
+            background: #000;
+            border-top-right-radius: 2px;
+            border-bottom-right-radius: 2px;
+        }
+
+        .dynamic-island {
+            position: absolute;
+            top: 11px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 35px;
+            background: #000;
+            border-radius: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .dynamic-island::after {
+            content: "";
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #3c3c3c;
+            border-radius: 50%;
+            right: 25px;
+            opacity: 0.7;
+        }
+
+        .dynamic-island-dot {
+            width: 4px;
+            height: 4px;
+            background: #4c4c4c;
+            border-radius: 50%;
+            position: absolute;
+            left: 39px;
+        }
+
+        .volume-button {
+            position: absolute;
+            left: -2px;
+            width: 3px;
+            height: 32px;
+            background: #2a2a2c;
+            border-radius: 2px;
+        }
+
+        .volume-up { top: 120px; }
+        .volume-down { top: 170px; }
+
+        .power-button {
+            position: absolute;
+            right: -2px;
+            top: 120px;
+            width: 3px;
+            height: 60px;
+            background: #2a2a2c;
+            border-radius: 2px;
+        }
+
+        .page-iframe {
+            width: 100%;
+            height: calc(100% - 50px);
+            border: none;
+            margin-top: 50px;
+            opacity: 1;
+            transition: none;
+        }
+
+        .page-iframe.loaded {
+            opacity: 1;
+        }
+
+        .home-indicator {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 135px;
+            height: 5px;
+            background: #000;
+            border-radius: 3px;
+            z-index: 1000;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-button {
+            background: var(--primary-color);
+            color: white;
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: none;
+            margin: 0 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: none;
+            box-shadow: 0 2px 8px rgba(0,122,255,0.25);
+        }
+
+        .nav-button:hover {
+            background: var(--primary-color);
+            transform: none;
+            box-shadow: 0 2px 8px rgba(0,122,255,0.25);
+        }
+
+        .nav-button:active {
+            transform: none;
+            box-shadow: 0 2px 8px rgba(0,122,255,0.25);
+        }
+
+        .lang-buttons {
+            display: flex;
+            gap: 5px;
+            background: rgba(255,255,255,0.12);
+            padding: 4px;
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        .lang-button {
+            padding: 8px 12px;
+            font-size: 14px;
+            color: white;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: none;
+            font-weight: 500;
+        }
+
+        .lang-button.active {
+            background: rgba(255,255,255,0.2);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .status-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--tertiary-color);
+            color: white;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(52,199,89,0.25);
+            z-index: 1001;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        .hint-overlay {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(20, 20, 22, 0.85);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 500;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            z-index: 1002;
+            animation: fadeIn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            letter-spacing: -0.01em;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 1; transform: translate(-50%, 0); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        /* iOS-style loading spinner */
+        .loading-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 122, 255, 0.2);
+            border-top-color: #007AFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 5;
+            display: none; /* Hide by default */
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+            
+            .controls {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        @media (max-width: 1920px) {
+            .frames-container {
+                justify-content: space-evenly;
+                padding: 40px 20px;
+            }
+        }
+
+        @media (max-width: 960px) {
+            .frames-container {
+                padding: 20px 10px;
+            }
+            
+            .frame-wrapper {
+                margin-bottom: 40px;
+            }
+        }
+
+        .tall .page-iframe {
+            height: calc(100% - 50px); /* Same as regular iframe but in taller container */
+        }
+
+        /* iOS-style status bar for new frames */
+        .ios-status-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            background: #F2F2F7;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            padding-top: env(safe-area-inset-top, 0px);
+        }
+
+        .ios-status-bar .time {
+            font-weight: 600;
+            font-size: 15px;
+            color: #000;
+        }
+
+        .ios-status-bar .icons {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .ios-status-bar .signal {
+            display: flex;
+            align-items: flex-end;
+            gap: 1px;
+            margin-right: 4px;
+        }
+
+        .ios-status-bar .signal-bar {
+            width: 3px;
+            background: #000;
+            border-radius: 1px;
+        }
+
+        .ios-status-bar .signal-bar-1 { height: 4px; }
+        .ios-status-bar .signal-bar-2 { height: 6px; }
+        .ios-status-bar .signal-bar-3 { height: 8px; }
+        .ios-status-bar .signal-bar-4 { height: 10px; }
+
+        .ios-status-bar .wifi {
+            width: 16px;
+            height: 12px;
+            position: relative;
+            margin-right: 4px;
+        }
+
+        .ios-status-bar .battery {
+            width: 24px;
+            height: 12px;
+            border: 1px solid #000;
+            border-radius: 3px;
+            padding: 1px;
+            position: relative;
+        }
+
+        .ios-status-bar .battery::after {
+            content: '';
+            position: absolute;
+            right: -3px;
+            top: 3px;
+            width: 2px;
+            height: 4px;
+            background: #000;
+            border-radius: 0 1px 1px 0;
+        }
+
+        .ios-status-bar .battery-level {
+            height: 100%;
+            width: 60%;
+            background: #000;
+            border-radius: 1px;
+        }
+
+        .ios-frame {
+            position: relative;
+            width: 390px;
+            height: 844px;
+            background: #fff;
+            border-radius: 48px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .ios-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 44px;
+            background: #F2F2F7;
+            z-index: 1;
+        }
+
+        .ios-frame iframe {
+            width: 100%;
+            height: calc(100% - 44px);
+            margin-top: 44px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo-container">
+            <i class="mdi mdi-truck-delivery-outline logo"></i>
+            <h1 class="text-xl font-bold">LogiWarp 物流仓储管理系统</h1>
+        </div>
+        <div class="controls">
+            <div class="lang-buttons">
+                <button id="en-button" class="lang-button" onclick="switchLanguage('en')">English</button>
+                <button id="zh-button" class="lang-button active" onclick="switchLanguage('zh')">中文</button>
+            </div>
+            <button class="nav-button" onclick="refreshAllFrames()">
+                <i class="mdi mdi-refresh mr-1"></i> 刷新全部
+            </button>
+        </div>
+    </div>
+
+    <div class="frames-container">
+        <!-- Login Page -->
+        <div class="frame-wrapper">
+            <div class="frame-title">登录页面</div>
+            <div class="iphone-frame tall">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <div class="status-bar-time">9:41</div>
+                        </div>
+                        <div class="dynamic-island"></div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon">
+                                <div class="wifi-circle"></div>
+                                <div class="wifi-bar wifi-bar-1"></div>
+                                <div class="wifi-bar wifi-bar-2"></div>
+                                <div class="wifi-bar wifi-bar-3"></div>
+                            </div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-spinner"></div>
+                    <iframe id="login-page" class="page-iframe" src="login.html"></iframe>
+                </div>
+                <div class="home-indicator"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div class="frame-wrapper">
+            <div class="frame-title">主页面</div>
+            <div class="iphone-frame tall">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <div class="status-bar-time">9:41</div>
+                        </div>
+                        <div class="dynamic-island"></div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon">
+                                <div class="wifi-circle"></div>
+                                <div class="wifi-bar wifi-bar-1"></div>
+                                <div class="wifi-bar wifi-bar-2"></div>
+                                <div class="wifi-bar wifi-bar-3"></div>
+                            </div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-spinner"></div>
+                    <iframe id="dashboard-page" class="page-iframe" src="index.html"></iframe>
+                </div>
+                <div class="home-indicator"></div>
+            </div>
+        </div>
+
+        <!-- Reception Scan Page -->
+        <div class="frame-wrapper">
+            <div class="frame-title">扫描签收</div>
+            <div class="iphone-frame tall">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <div class="status-bar-time">9:41</div>
+                        </div>
+                        <div class="dynamic-island"></div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon">
+                                <div class="wifi-circle"></div>
+                                <div class="wifi-bar wifi-bar-1"></div>
+                                <div class="wifi-bar wifi-bar-2"></div>
+                                <div class="wifi-bar wifi-bar-3"></div>
+                            </div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-spinner"></div>
+                    <iframe id="scan-page" class="page-iframe" src="reception/scan.html"></iframe>
+                </div>
+                <div class="home-indicator"></div>
+            </div>
+        </div>
+
+        <!-- Inventory Page -->
+        <div class="frame-wrapper">
+            <div class="frame-title">已签包裹</div>
+            <div class="iphone-frame tall">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <div class="status-bar-time">9:41</div>
+                        </div>
+                        <div class="dynamic-island"></div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon">
+                                <div class="wifi-circle"></div>
+                                <div class="wifi-bar wifi-bar-1"></div>
+                                <div class="wifi-bar wifi-bar-2"></div>
+                                <div class="wifi-bar wifi-bar-3"></div>
+                            </div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-spinner"></div>
+                    <iframe id="inventory-page" class="page-iframe" src="reception/inventory.html"></iframe>
+                </div>
+                <div class="home-indicator"></div>
+            </div>
+        </div>
+        
+        <!-- Member Binding Page -->
+        <div class="frame-wrapper">
+            <div class="frame-title">会员绑定</div>
+            <div class="iphone-frame tall">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <div class="status-bar-time">9:41</div>
+                        </div>
+                        <div class="dynamic-island"></div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon">
+                                <div class="wifi-circle"></div>
+                                <div class="wifi-bar wifi-bar-1"></div>
+                                <div class="wifi-bar wifi-bar-2"></div>
+                                <div class="wifi-bar wifi-bar-3"></div>
+                            </div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-spinner"></div>
+                    <iframe id="member-binding-page" class="page-iframe" src="reception/member-binding.html"></iframe>
+                </div>
+                <div class="home-indicator"></div>
+            </div>
+        </div>
+
+        <!-- Entry Management Page -->
+        <div class="frame-wrapper">
+            <div class="frame-title">录入</div>
+            <div class="iphone-frame tall">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <div class="status-bar-time">9:41</div>
+                        </div>
+                        <div class="dynamic-island"></div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon">
+                                <div class="wifi-circle"></div>
+                                <div class="wifi-bar wifi-bar-1"></div>
+                                <div class="wifi-bar wifi-bar-2"></div>
+                                <div class="wifi-bar wifi-bar-3"></div>
+                            </div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-spinner"></div>
+                    <iframe id="entry-page" class="page-iframe" src="reception/entry.html"></iframe>
+                </div>
+                <div class="home-indicator"></div>
+            </div>
+        </div>
+
+        <!-- Warehouse Entry Page -->
+        <div class="frame-wrapper">
+            <div class="frame-title">入库</div>
+            <div class="iphone-frame tall">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <div class="status-bar-time">9:41</div>
+                        </div>
+                        <div class="dynamic-island"></div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon">
+                                <div class="wifi-circle"></div>
+                                <div class="wifi-bar wifi-bar-1"></div>
+                                <div class="wifi-bar wifi-bar-2"></div>
+                                <div class="wifi-bar wifi-bar-3"></div>
+                            </div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-spinner"></div>
+                    <iframe id="warehouse-entry-page" class="page-iframe" src="reception/warehouse-entry.html"></iframe>
+                </div>
+                <div class="home-indicator"></div>
+            </div>
+        </div>
+
+        <!-- Profile Page -->
+        <div class="frame-wrapper">
+            <div class="frame-title">个人中心</div>
+            <div class="iphone-frame tall">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <div class="status-bar-time">9:41</div>
+                        </div>
+                        <div class="dynamic-island"></div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon">
+                                <div class="wifi-circle"></div>
+                                <div class="wifi-bar wifi-bar-1"></div>
+                                <div class="wifi-bar wifi-bar-2"></div>
+                                <div class="wifi-bar wifi-bar-3"></div>
+                            </div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-spinner"></div>
+                    <iframe id="profile-page" class="page-iframe" src="profile.html"></iframe>
+                </div>
+                <div class="home-indicator"></div>
+            </div>
+        </div>
+
+        <!-- Warehouse Exit Page -->
+        <div class="frame-wrapper">
+            <div class="frame-title">出库</div>
+            <div class="iphone-frame tall">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <span class="status-bar-time">9:41</span>
+                        </div>
+                        <div class="dynamic-island"></div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon">
+                                <div class="wifi-circle"></div>
+                                <div class="wifi-bar wifi-bar-1"></div>
+                                <div class="wifi-bar wifi-bar-2"></div>
+                                <div class="wifi-bar wifi-bar-3"></div>
+                            </div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                    </div>
+                    <iframe id="warehouse-exit-page" class="page-iframe" src="reception/warehouse-exit.html"></iframe>
+                    <div class="home-indicator"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scan Package Frame -->
+        <div class="frame-wrapper">
+            <div class="frame-title" data-i18n="packaging.scanPackage">打包校验</div>
+            <div class="iphone-frame">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <span class="status-bar-time">9:41</span>
+                        </div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon"></div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                                <div class="battery-tip"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <iframe id="scan-package-page" class="page-iframe" src="packaging/scan-package.html"></iframe>
+                    <div class="home-indicator"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scan Weighing Frame -->
+        <div class="frame-wrapper">
+            <div class="frame-title" data-i18n="packaging.scanWeighing">扫描称重</div>
+            <div class="iphone-frame">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <span class="status-bar-time">9:41</span>
+                        </div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon"></div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                                <div class="battery-tip"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <iframe id="scan-weighing-page" class="page-iframe" src="packaging/scan-weighing.html"></iframe>
+                    <div class="home-indicator"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Package Distribution Page -->
+        <div class="frame-wrapper">
+            <div class="frame-title" data-i18n="packaging.packageDistribution">包裹分发</div>
+            <div class="iphone-frame">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <span class="status-bar-time">9:41</span>
+                        </div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon"></div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                                <div class="battery-tip"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <iframe id="package-distribution-page" class="page-iframe" src="packaging/distribution.html"></iframe>
+                    <div class="home-indicator"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipping Page -->
+        <div class="frame-wrapper">
+            <div class="frame-title" data-i18n="packaging.shipping">发货</div>
+            <div class="iphone-frame">
+                <div class="screen">
+                    <div class="status-bar">
+                        <div class="status-bar-left">
+                            <span class="status-bar-time">9:41</span>
+                        </div>
+                        <div class="status-bar-right">
+                            <div class="cellular-icon">
+                                <div class="cellular-bar bar-1"></div>
+                                <div class="cellular-bar bar-2"></div>
+                                <div class="cellular-bar bar-3"></div>
+                                <div class="cellular-bar bar-4"></div>
+                            </div>
+                            <div class="wifi-icon"></div>
+                            <div class="battery-icon">
+                                <div class="battery-level"></div>
+                                <div class="battery-tip"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <iframe id="shipping-page" class="page-iframe" src="packaging/shipping.html"></iframe>
+                    <div class="home-indicator"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="hint-overlay" class="hint-overlay" style="display:none;">
+        <span class="lang-label" data-lang="en" style="display:none;">Language switched to English</span>
+        <span class="lang-label" data-lang="zh">语言已切换为中文</span>
+    </div>
+
+    <script>
+        // Get all frames
+        const frames = [
+            { id: 'login-page', src: 'login.html', title: '登录' },
+            { id: 'dashboard-page', src: 'dashboard.html', title: '主页' },
+            { id: 'scan-page', src: 'reception/scan.html', title: '扫描签收' },
+            { id: 'inventory-page', src: 'reception/inventory.html', title: '已签包裹' },
+            { id: 'member-binding-page', src: 'reception/member-binding.html', title: '会员绑定' },
+            { id: 'entry-page', src: 'reception/entry.html', title: '录入' },
+            { id: 'warehouse-entry-page', src: 'reception/warehouse-entry.html', title: '入库' },
+            { id: 'profile-page', src: 'profile.html', title: '个人中心' },
+            { id: 'warehouse-exit-page', src: 'reception/warehouse-exit.html', title: '出库' },
+            { id: 'scan-package-page', src: 'packaging/scan-package.html', title: '打包校验' },
+            { id: 'scan-weighing-page', src: 'packaging/scan-weighing.html', title: '扫描称重' },
+            { id: 'package-distribution-page', src: 'packaging/distribution.html', title: '包裹分发' },
+            { id: 'shipping-page', src: 'packaging/shipping.html', title: '发货' }
+        ];
+
+        // Current language
+        let currentLang = 'zh'; // Default to Chinese
+
+        // Function to switch language across all frames and UI elements
+        function switchLanguage(lang) {
+            currentLang = lang;
+            
+            // Update active button state
+            document.getElementById('en-button').classList.toggle('active', lang === 'en');
+            document.getElementById('zh-button').classList.toggle('active', lang === 'zh');
+            
+            // Update all language labels in the UI
+            document.querySelectorAll('.lang-label').forEach(el => {
+                const isMatchingLang = el.getAttribute('data-lang') === lang;
+                el.style.display = isMatchingLang ? 'inline' : 'none';
+            });
+            
+            // Try to switch language in each iframe
+            frames.forEach(frame => {
+                const frameElement = document.getElementById(frame.id);
+                if (frameElement && frameElement.contentWindow) {
+                    try {
+                        // Using postMessage for secure cross-origin messaging
+                        frameElement.contentWindow.postMessage({ action: 'switchLanguage', lang: lang }, '*');
+                    } catch (e) {
+                        console.warn(`Could not switch language in frame ${frame.id}: ${e.message}`);
+                    }
+                }
+            });
+            
+            // Show hint overlay with iOS-style animation
+            const hintOverlay = document.getElementById('hint-overlay');
+            hintOverlay.style.display = 'block';
+            
+            // Hide hint after 2 seconds with fade-out effect
+            setTimeout(() => {
+                hintOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    hintOverlay.style.display = 'none';
+                    hintOverlay.style.opacity = '1';
+                }, 300);
+            }, 2000);
+        }
+        
+        // Simplified function to refresh all frames
+        function refreshAllFrames() {
+            frames.forEach(frame => {
+                const frameElement = document.getElementById(frame.id);
+                const spinner = document.getElementById(frame.spinnerId);
+                
+                if (frameElement) {
+                    // Show spinner before reload
+                    if (spinner) spinner.style.display = 'block';
+                    
+                    // Set a timeout to hide the spinner if it gets stuck
+                    setTimeout(() => {
+                        if (spinner) spinner.style.display = 'none';
+                    }, 5000); // 5 second failsafe
+                    
+                    // Reload the frame
+                    frameElement.src = frame.src;
+                }
+            });
+        }
+
+        // Simplified message listener
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.action === 'languageChanged') {
+                // Nothing to do here, just log
+                console.log(`Language changed in frame: ${event.data.frameId}`);
+            }
+        });
+
+        // Simplified initialization
+        window.addEventListener('load', () => {
+            // Mock login for preview
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('lang', 'zh');
+            
+            // Add simple frame load handlers
+            frames.forEach(frame => {
+                const frameElement = document.getElementById(frame.id);
+                const spinner = document.getElementById(frame.spinnerId);
+                
+                // Initial language setting
+                try {
+                    if (frameElement.contentWindow) {
+                        frameElement.contentWindow.postMessage({ 
+                            action: 'switchLanguage', 
+                            lang: currentLang 
+                        }, '*');
+                    }
+                } catch (e) {
+                    console.warn(`Could not set initial language: ${e.message}`);
+                }
+                
+                // Set up onload handler
+                frameElement.onload = function() {
+                    // Hide spinner as soon as frame loads
+                    if (spinner) spinner.style.display = 'none';
+                    
+                    // Set language again after frame loads
+                    try {
+                        if (frameElement.contentWindow) {
+                            frameElement.contentWindow.postMessage({ 
+                                action: 'switchLanguage', 
+                                lang: currentLang 
+                            }, '*');
+                        }
+                    } catch (e) {
+                        console.warn(`Could not set language after load: ${e.message}`);
+                    }
+                };
+                
+                // Failsafe: Hide spinner after 3 seconds regardless
+                setTimeout(() => {
+                    if (spinner) spinner.style.display = 'none';
+                }, 3000);
+            });
+        });
+        
+        // Simplified time updates - just set it once
+        function updateIphoneTime() {
+            const hours = 9;
+            const minutes = 41; // Fixed at 9:41 - the iconic Apple time
+            const timeStr = `${hours}:${minutes}`;
+            
+            document.querySelectorAll('.status-bar-time').forEach(el => {
+                el.textContent = timeStr;
+            });
+        }
+        
+        // Set the time once, don't update (reduce unnecessary DOM operations)
+        updateIphoneTime();
+    </script>
+</body>
+</html> 

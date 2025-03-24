@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title data-i18n="packaging.shipping">发货</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="../assets/carrier-icons.css">
+    <style>
+        :root {
+            --ios-background: #F2F2F7;
+            --ios-card-background: #FFFFFF;
+            --ios-blue: #007AFF;
+            --ios-gray: #8E8E93;
+            --ios-border: #C5C5C7;
+        }
+
+        body {
+            background: var(--ios-background);
+            margin: 0;
+            padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--ios-card-background);
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0;
+            border-bottom: 1px solid var(--ios-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 17px;
+            font-weight: 600;
+            margin: 0;
+            color: #000;
+            padding-left: 16px;
+        }
+
+        .header-button {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ios-gray);
+            text-decoration: none;
+        }
+
+        .header-button i {
+            font-size: 24px;
+        }
+
+        .header-button:active {
+            opacity: 0.6;
+        }
+
+        .form-group {
+            margin: 16px;
+            position: relative;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 17px;
+            margin-bottom: 8px;
+            color: #000;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            font-size: 17px;
+            border: 1px solid var(--ios-border);
+            border-radius: 8px;
+            background: var(--ios-card-background);
+            box-sizing: border-box;
+        }
+        
+        .form-group .unit {
+            position: absolute;
+            right: 12px;
+            top: 42px;
+            color: var(--ios-gray);
+            font-size: 17px;
+        }
+        
+        .scan-button {
+            position: absolute;
+            right: 12px;
+            top: 42px;
+            color: var(--ios-blue);
+            font-size: 24px;
+        }
+
+        .section-header {
+            font-size: 17px;
+            color: #000;
+            margin: 16px 16px 4px 16px;
+        }
+
+        .action-button {
+            position: fixed;
+            bottom: calc(20px + env(safe-area-inset-bottom));
+            left: 16px;
+            right: 16px;
+            background: var(--ios-blue);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .action-button:active {
+            background: #0051A8;
+        }
+
+        .action-button:disabled {
+            opacity: 0.5;
+        }
+
+        @supports (padding: max(0px)) {
+            body {
+                padding-bottom: max(env(safe-area-inset-bottom), 20px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1 data-i18n="packaging.shipping">发货</h1>
+        <a href="../index.html" class="header-button">
+            <i class="mdi mdi-close"></i>
+        </a>
+    </header>
+
+    <!-- Package Information Form -->
+    <div class="form-group">
+        <label data-i18n="packaging.packageId">包裹编号</label>
+        <input type="text" data-i18n-placeholder="packaging.enterPackageId" placeholder="扫描或输入包裹编号">
+        <i class="mdi mdi-barcode-scan scan-button"></i>
+    </div>
+
+    <div class="form-group">
+        <label data-i18n="packaging.weight">重量</label>
+        <input type="number" step="0.1" value="0.00">
+        <span class="unit" data-i18n="packaging.weightUnit">kg</span>
+    </div>
+
+    <div class="form-group">
+        <label data-i18n="packaging.dimensions">尺寸</label>
+        <input type="text" placeholder="0 × 0 × 0">
+        <span class="unit" data-i18n="packaging.dimensionUnit">cm</span>
+    </div>
+
+    <div class="form-group">
+        <label data-i18n="packaging.destination">目的地</label>
+        <input type="text">
+    </div>
+
+    <!-- Carrier Selection -->
+    <div class="section-header" data-i18n="packaging.selectCarrier">
+        选择承运商
+    </div>
+    <div class="carrier-rates">
+        <div class="carrier-rate" onclick="selectCarrier('fedex')">
+            <span class="carrier-icon fedex"></span>
+            <div class="carrier-name">FedEx</div>
+            <div class="carrier-price">¥128.00</div>
+        </div>
+        <div class="carrier-rate" onclick="selectCarrier('dhl')">
+            <span class="carrier-icon dhl"></span>
+            <div class="carrier-name">DHL</div>
+            <div class="carrier-price">¥156.00</div>
+        </div>
+    </div>
+
+    <!-- Action Button -->
+    <button class="action-button" data-i18n="packaging.generateLabel">
+        生成运单
+    </button>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="../js/i18n.js" type="module"></script>
+    <script type="module">
+        import i18n from '../js/i18n.js';
+        
+        // Initialize i18n
+        await i18n.init();
+
+        // Add carrier selection handler
+        window.selectCarrier = (carrier) => {
+            document.querySelectorAll('.carrier-rate').forEach(el => {
+                el.style.borderColor = 'var(--ios-border)';
+            });
+            const selectedEl = document.querySelector(`.carrier-rate:has(.carrier-icon.${carrier})`);
+            if (selectedEl) {
+                selectedEl.style.borderColor = 'var(--ios-blue)';
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(5);
+                }
+            }
+        };
+
+        // Add scan handler
+        document.querySelector('.scan-button').addEventListener('click', () => {
+            // TODO: Implement barcode scanning
+            if ('vibrate' in navigator) {
+                navigator.vibrate(5);
+            }
+        });
+
+        // Add form submit handler
+        document.querySelector('.action-button').addEventListener('click', (e) => {
+            e.preventDefault();
+            // TODO: Implement label generation
+            if ('vibrate' in navigator) {
+                navigator.vibrate([10, 30, 10]);
+            }
+        });
+    </script>
+</body>
+</html> 

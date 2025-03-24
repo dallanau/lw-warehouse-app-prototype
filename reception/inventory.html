@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>已签包裹 - 物流仓储管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+    <script>
+        // Define a temporary global switchLanguage function to prevent errors
+        // Will be replaced by the real implementation when the module loads
+        window.switchLanguage = function(lang) {
+            console.log('Language module still loading...');
+        };
+    </script>
+</head>
+<body class="bg-gray-100">
+    <div class="container fade-in pb-20">
+        <!-- Header -->
+        <header class="header">
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl font-bold" data-i18n="reception.signedInventory">已签包裹</h1>
+                <a href="../index.html" class="flex items-center text-primary-color">
+                    <i class="mdi mdi-home text-lg mr-1"></i>
+                    <span data-i18n="nav.dashboard">主页</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="mt-4">
+            <!-- Search and Filter Section -->
+            <div class="card p-4">
+                <div class="flex gap-3 mb-4">
+                    <div class="flex-1">
+                        <input type="text" 
+                               id="searchInput"
+                               class="input" 
+                               data-i18n-placeholder="common.search"
+                               placeholder="Search packages...">
+                    </div>
+                    <button class="btn btn-secondary" id="filterButton">
+                        <i class="mdi mdi-filter-variant"></i>
+                    </button>
+                </div>
+
+                <!-- Filter Options (Hidden by default) -->
+                <div id="filterOptions" class="hidden border-t pt-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm text-secondary mb-1 block" data-i18n="common.dateRange">Date Range</label>
+                            <select class="input">
+                                <option value="today" data-i18n="common.today">Today</option>
+                                <option value="week" data-i18n="common.thisWeek">This Week</option>
+                                <option value="month" data-i18n="common.thisMonth">This Month</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-sm text-secondary mb-1 block" data-i18n="common.status">Status</label>
+                            <select class="input">
+                                <option value="all" data-i18n="common.all">All</option>
+                                <option value="processing" data-i18n="common.processing">Processing</option>
+                                <option value="completed" data-i18n="common.completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory List -->
+            <div class="mt-4 space-y-3" id="inventoryList">
+                <!-- Sample items - In real app, these would be populated dynamically -->
+                <div class="card p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold">PKG-2024-001</h3>
+                            <p class="text-sm text-secondary mt-1">2024-03-23 10:30 AM</p>
+                        </div>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full" data-i18n="common.completed">
+                            Completed
+                        </span>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-gray-100">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-secondary" data-i18n="common.location">Location:</span>
+                            <span>Zone A-123</span>
+                        </div>
+                        <div class="flex justify-between text-sm mt-1">
+                            <span class="text-secondary" data-i18n="common.type">Type:</span>
+                            <span>Standard</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-semibold">PKG-2024-002</h3>
+                            <p class="text-sm text-secondary mt-1">2024-03-23 11:15 AM</p>
+                        </div>
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full" data-i18n="common.processing">
+                            Processing
+                        </span>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-gray-100">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-secondary" data-i18n="common.location">Location:</span>
+                            <span>Zone B-456</span>
+                        </div>
+                        <div class="flex justify-between text-sm mt-1">
+                            <span class="text-secondary" data-i18n="common.type">Type:</span>
+                            <span>Express</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import i18n from '../js/i18n.js';
+
+        // Check authentication
+        if (!localStorage.getItem('isLoggedIn')) {
+            window.location.href = '../login.html';
+            throw new Error('Not authenticated');
+        }
+
+        // Initialize i18n
+        await i18n.init();
+
+        // Make language switch function available globally
+        window.switchLanguage = (lang) => {
+            i18n.setLanguage(lang);
+            
+            // Update button active states
+            document.getElementById('en-btn').classList.toggle('active', lang === 'en');
+            document.getElementById('zh-btn').classList.toggle('active', lang === 'zh');
+            
+            // Notify parent if in iframe
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    action: 'languageChanged',
+                    lang: lang,
+                    frameId: window.name
+                }, '*');
+            }
+        };
+        
+        // Add event listeners for language buttons
+        document.getElementById('en-btn').addEventListener('click', () => switchLanguage('en'));
+        document.getElementById('zh-btn').addEventListener('click', () => switchLanguage('zh'));
+
+        // Message listener for frame communication
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.action === 'switchLanguage') {
+                switchLanguage(event.data.lang);
+            }
+        });
+
+        // Filter toggle
+        const filterButton = document.getElementById('filterButton');
+        const filterOptions = document.getElementById('filterOptions');
+        
+        filterButton.addEventListener('click', () => {
+            filterOptions.classList.toggle('hidden');
+        });
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const inventoryList = document.getElementById('inventoryList');
+        
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const items = inventoryList.children;
+            
+            for (let item of items) {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            }
+        });
+    </script>
+</body>
+</html> 

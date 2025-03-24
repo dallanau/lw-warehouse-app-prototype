@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扫描签收 - 物流仓储管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script>
+        // Define a temporary global switchLanguage function to prevent errors
+        // Will be replaced by the real implementation when the module loads
+        window.switchLanguage = function(lang) {
+            console.log('Language module still loading...');
+        };
+    </script>
+</head>
+<body class="bg-gray-100">
+    <div class="container fade-in pb-20">
+        <!-- Header -->
+        <header class="header">
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl font-bold" data-i18n="reception.scanReception">扫描签收</h1>
+                <a href="../index.html" class="flex items-center text-primary-color">
+                    <i class="mdi mdi-home text-lg mr-1"></i>
+                    <span data-i18n="nav.dashboard">主页</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="mt-4">
+            <!-- Scanner Section -->
+            <div class="card p-4">
+                <div id="reader" class="scanner-frame mb-4"></div>
+                <div class="text-center mb-4">
+                    <p class="text-secondary mb-2" data-i18n="messages.scanPrompt">Position the QR code within the frame</p>
+                    <div id="scanResult" class="hidden">
+                        <p class="text-success font-semibold" data-i18n="messages.scanSuccess">Scan successful!</p>
+                        <p id="resultText" class="text-primary mt-2"></p>
+                    </div>
+                </div>
+                <div class="flex justify-center gap-3">
+                    <button id="startButton" class="btn btn-primary" data-i18n="common.startScan">Start Scan</button>
+                    <button id="stopButton" class="btn btn-secondary hidden" data-i18n="common.stopScan">Stop</button>
+                </div>
+            </div>
+
+            <!-- Recent Scans -->
+            <div class="card mt-4 p-4">
+                <h2 class="text-lg font-semibold mb-3" data-i18n="reception.recentScans">Recent Scans</h2>
+                <div id="recentScans" class="space-y-3">
+                    <!-- Recent scans will be added here dynamically -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import i18n from '../js/i18n.js';
+
+        // Check authentication
+        if (!localStorage.getItem('isLoggedIn')) {
+            window.location.href = '../login.html';
+            throw new Error('Not authenticated');
+        }
+
+        // Initialize i18n
+        await i18n.init();
+
+        // Make language switch function available globally
+        window.switchLanguage = (lang) => {
+            i18n.setLanguage(lang);
+            
+            // Update button active states
+            document.getElementById('en-btn').classList.toggle('active', lang === 'en');
+            document.getElementById('zh-btn').classList.toggle('active', lang === 'zh');
+            
+            // Notify parent if in iframe
+            if (window.parent !== window) {
+                window.parent.postMessage({
+                    action: 'languageChanged',
+                    lang: lang,
+                    frameId: window.name
+                }, '*');
+            }
+        };
+        
+        // Add event listeners for language buttons
+        document.getElementById('en-btn').addEventListener('click', () => switchLanguage('en'));
+        document.getElementById('zh-btn').addEventListener('click', () => switchLanguage('zh'));
+
+        // Message listener for frame communication
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.action === 'switchLanguage') {
+                switchLanguage(event.data.lang);
+            }
+        });
+
+        // Scanner initialization
+        const html5QrcodeScanner = new Html5Qrcode("reader");
+        let scanning = false;
+
+        // UI Elements
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const scanResult = document.getElementById('scanResult');
+        const resultText = document.getElementById('resultText');
+        const recentScans = document.getElementById('recentScans');
+
+        // Start scanning
+        startButton.addEventListener('click', async () => {
+            try {
+                await html5QrcodeScanner.start(
+                    { facingMode: "environment" },
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    onScanSuccess,
+                    onScanError
+                );
+                scanning = true;
+                startButton.classList.add('hidden');
+                stopButton.classList.remove('hidden');
+            } catch (err) {
+                console.error('Scanner start error:', err);
+            }
+        });
+
+        // Stop scanning
+        stopButton.addEventListener('click', async () => {
+            try {
+                await html5QrcodeScanner.stop();
+                scanning = false;
+                stopButton.classList.add('hidden');
+                startButton.classList.remove('hidden');
+            } catch (err) {
+                console.error('Scanner stop error:', err);
+            }
+        });
+
+        // Handle successful scan
+        function onScanSuccess(decodedText, decodedResult) {
+            // Stop scanning after successful scan
+            html5QrcodeScanner.stop();
+            scanning = false;
+            stopButton.classList.add('hidden');
+            startButton.classList.remove('hidden');
+
+            // Show result
+            scanResult.classList.remove('hidden');
+            resultText.textContent = decodedText;
+
+            // Add to recent scans
+            addToRecentScans(decodedText);
+
+            // TODO: Process the scanned data (e.g., send to server)
+        }
+
+        // Handle scan errors
+        function onScanError(err) {
+            console.warn(`Scan error: ${err}`);
+        }
+
+        // Add scan to recent list
+        function addToRecentScans(text) {
+            const scanItem = document.createElement('div');
+            scanItem.className = 'flex justify-between items-center p-3 bg-white rounded-lg shadow-sm';
+            scanItem.innerHTML = `
+                <div class="flex items-center">
+                    <i class="mdi mdi-package-variant text-primary mr-3"></i>
+                    <span class="text-sm">${text}</span>
+                </div>
+                <span class="text-xs text-secondary">${new Date().toLocaleTimeString()}</span>
+            `;
+            recentScans.insertBefore(scanItem, recentScans.firstChild);
+        }
+    </script>
+</body>
+</html> 

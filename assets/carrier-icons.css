@@ -1,0 +1,55 @@
+.carrier-rates {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 16px;
+}
+
+.carrier-rate {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    background: var(--ios-card-background);
+    border-radius: 12px;
+    border: 1px solid var(--ios-border);
+    text-align: center;
+}
+
+.carrier-rate:active {
+    background: var(--active-background);
+}
+
+.carrier-icon {
+    width: 80px;
+    height: 24px;
+    margin-bottom: 12px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.carrier-icon.fedex {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 35'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial Black, Arial' font-weight='900' font-size='16' fill='%234D148C'%3EFedEx%3C/text%3E%3C/svg%3E");
+}
+
+.carrier-icon.dhl {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 35'%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='Arial Black, Arial' font-weight='900' font-size='16' fill='%23D40511'%3EDHL%3C/text%3E%3C/svg%3E");
+}
+
+.carrier-name {
+    font-size: 17px;
+    font-weight: 400;
+    color: #000;
+    margin-bottom: 4px;
+}
+
+.carrier-price {
+    font-size: 15px;
+    color: var(--ios-gray);
+}
+
+.carrier-eta {
+    font-size: 14px;
+    color: var(--text-secondary);
+} 

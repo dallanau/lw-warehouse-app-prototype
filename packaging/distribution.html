@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>包裹分发 - 物流仓储管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="../assets/carrier-icons.css">
+    <style>
+        /* iOS-like styling */
+        :root {
+            --ios-background: #F2F2F7;
+            --ios-card-background: #FFFFFF;
+            --ios-blue: #007AFF;
+            --ios-gray: #8E8E93;
+            --ios-border: #C5C5C7;
+            --ios-success: #34C759;
+            --ios-section-header: #6D6D72;
+        }
+
+        body {
+            background: var(--ios-background);
+        }
+
+        .search-bar {
+            background: rgba(118, 118, 128, 0.12);
+            border-radius: 10px;
+            margin: 8px 16px;
+            position: relative;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 8px 32px;
+            font-size: 17px;
+            border: none;
+            background: transparent;
+            color: #000;
+        }
+
+        .search-bar input::placeholder {
+            color: var(--ios-gray);
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--ios-gray);
+        }
+
+        .section-header {
+            padding: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ios-section-header);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .package-list {
+            background: var(--ios-card-background);
+        }
+
+        .package-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--ios-border);
+            min-height: 44px;
+        }
+
+        .package-item:last-child {
+            border-bottom: none;
+        }
+
+        .package-info {
+            flex: 1;
+        }
+
+        .package-id {
+            font-size: 17px;
+            font-weight: 400;
+            color: #000;
+            margin-bottom: 4px;
+        }
+
+        .package-details {
+            font-size: 15px;
+            color: var(--ios-gray);
+        }
+
+        .chevron {
+            color: var(--ios-gray);
+            opacity: 0.3;
+        }
+
+        .action-button {
+            position: fixed;
+            bottom: calc(20px + env(safe-area-inset-bottom));
+            left: 16px;
+            right: 16px;
+            background: var(--ios-blue);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 600;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        .action-button:active {
+            transform: scale(0.98);
+            background: #0051A8;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--ios-card-background);
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0;
+            border-bottom: 1px solid var(--ios-border);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 17px;
+            font-weight: 600;
+            margin: 0;
+            color: #000;
+            padding-left: 16px;
+        }
+
+        .header-button {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--ios-gray);
+            text-decoration: none;
+        }
+
+        .header-button i {
+            font-size: 24px;
+        }
+
+        .header-button:active {
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <h1 data-i18n="packaging.packageDistribution">包裹分发</h1>
+        <a href="../index.html" class="header-button">
+            <i class="mdi mdi-close"></i>
+        </a>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <i class="mdi mdi-magnify text-xl"></i>
+        <input type="text" data-i18n-placeholder="packaging.searchPackage" placeholder="搜索包裹">
+    </div>
+
+    <!-- Pending Distribution Section -->
+    <div class="section-header" data-i18n="packaging.pendingDistribution">
+        待分发
+    </div>
+    <div class="package-list">
+        <div class="package-item">
+            <div class="package-info">
+                <div class="package-id">PKG001</div>
+                <div class="package-details">2.5kg · Shanghai</div>
+            </div>
+            <i class="mdi mdi-chevron-right chevron"></i>
+        </div>
+        <div class="package-item">
+            <div class="package-info">
+                <div class="package-id">PKG002</div>
+                <div class="package-details">1.8kg · Beijing</div>
+            </div>
+            <i class="mdi mdi-chevron-right chevron"></i>
+        </div>
+        <div class="package-item">
+            <div class="package-info">
+                <div class="package-id">PKG003</div>
+                <div class="package-details">3.2kg · Guangzhou</div>
+            </div>
+            <i class="mdi mdi-chevron-right chevron"></i>
+        </div>
+    </div>
+
+    <!-- Distributed Today Section -->
+    <div class="section-header" data-i18n="packaging.distributedToday">
+        今日已分发
+    </div>
+    <div class="package-list">
+        <div class="package-item">
+            <div class="package-info">
+                <div class="package-id">PKG004</div>
+                <div class="package-details">2.1kg · Shenzhen</div>
+            </div>
+            <i class="mdi mdi-chevron-right chevron"></i>
+        </div>
+        <div class="package-item">
+            <div class="package-info">
+                <div class="package-id">PKG005</div>
+                <div class="package-details">4.0kg · Chengdu</div>
+            </div>
+            <i class="mdi mdi-chevron-right chevron"></i>
+        </div>
+    </div>
+
+    <!-- Action Button -->
+    <button class="action-button" data-i18n="packaging.startDistribution">
+        开始分发
+    </button>
+
+    <script src="../js/i18n.js" type="module"></script>
+    <script type="module">
+        import i18n from '../js/i18n.js';
+        
+        // Initialize i18n
+        await i18n.init();
+
+        // Add click handlers for package items
+        document.querySelectorAll('.package-item').forEach(item => {
+            item.addEventListener('click', () => {
+                if ('vibrate' in navigator) {
+                    navigator.vibrate(5);
+                }
+                // Navigate to package detail view
+                // TODO: Implement navigation
+            });
+        });
+
+        // Add click handler for action button
+        document.querySelector('.action-button').addEventListener('click', () => {
+            if ('vibrate' in navigator) {
+                navigator.vibrate([10, 30, 10]);
+            }
+            // Start distribution process
+            // TODO: Implement distribution workflow
+        });
+
+        // Add search functionality
+        const searchInput = document.querySelector('.search-bar input');
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.package-item').forEach(item => {
+                const id = item.querySelector('.package-id').textContent.toLowerCase();
+                const details = item.querySelector('.package-details').textContent.toLowerCase();
+                const matches = id.includes(query) || details.includes(query);
+                item.style.display = matches ? 'flex' : 'none';
+            });
+        });
+    </script>
+</body>
+</html> 
